@@ -1,0 +1,1 @@
+powershell -file .\Add-PuttyHosts.ps1

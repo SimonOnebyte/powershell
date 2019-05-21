@@ -1,0 +1,13 @@
+{
+    "portals": [{
+            "key": "key1",
+            "client": "Company One Name",
+            "account": "admin@company1.onmicrosoft.com"
+        },
+        {
+            "key": "key2",
+            "client": "Company Two Name",
+            "account": "admin@company2.onmicrosoft.com"
+        }
+    ]
+}
