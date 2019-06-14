@@ -5,32 +5,41 @@
 .PARAMETER Path
     A list of paths to one of more folders that should be created
 
+.PARAMETER Protect
+    Deny 'Authenticated Users' the ability to delete the folder
+
+.PARAMETER ReadWrite
+    Grant read & write permissions to the specified users/groups
+
+.PARAMETER AdminAccess
+    Grant full permissions to the specified users/groups
+
 .PARAMETER Owner
     The account or group to assign as the owner
     Default is Administrators
 
-.PARAMETER Protect
-    Deny 'Authenticated Users' the ability to delete the folder
-
-.PARAMETER WriteRight
-    Grant full read & write access to the specified users/groups
-
 .PARAMETER ReadOnly
-    Grant read only access to the specified users/groups
+    Grant read only permissions to the specified users/groups
 
 .EXAMPLE
-  Example
+  New-Folder -Path "\\server01\Profiles\bob", "\\server02\Folders\bob" -ReadWrite "bob" 
  
-  Example description
+  This will create the two folders and assign read/write permissions to the user account 'bob'
+  The owner of the folder will also be set to 'Administrators
+  The folders will not be protected from accidentaly renames, moves or deletions
+
 .EXAMPLE
-  Example
+  New-Folder -Path "\\server01\Profiles\bob", "\\server02\Folders\bob" -ReadWrite "bob" -Protected
  
-  Example description
+  This will create the two folders and assign read/write permissions to the user account 'bob'
+  The owner of the folder will also be set to 'Administrators
+  The folders will be protected from accidentaly renames, moves or deletions
 
 .NOTES
   Authored By: Simon Buckner
   Email: simon@onebyte.net
   Date: 7th June 2019
+  
 .LINK
   http://wiki.onebyte.net/doku.php?id=contents:powershell
 
@@ -74,7 +83,7 @@ Param(
         Position = 4
     )]
     [ValidateLength(1, 256)]
-    [String]$Owner,
+    [String]$Owner="Administrators",
 
     [Parameter(
         Mandatory = $False,
