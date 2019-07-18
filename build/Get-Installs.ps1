@@ -65,41 +65,42 @@ BEGIN {
 
   # Declare any supporting functions here
   # #########################################################################
-  function myFunc([string]$p) {
-    Write-Host "myFunc called with"
+  function directDownload([string]$name, [string]$uri, [string]$outFile) {
+    Write-Verbose "Downloading $name from $uri to $outFile"
+    Invoke-WebRequest -Uri $uri -OutFile $outFile
+  }
+
+  function regexLinkDownload([string]$name, [string]$baseUri, [string]$page = "", [string]$outFile, [string]$regex) {
+    Write-Verbose "Downloading $name from $baseUri$page to $outFile from link matching $regex"
+    
+    $res = Invoke-WebRequest -Uri $baseUri$page
+    $ignore = $false
+    foreach ($link in $res.Links) {
+      if (-not $ignore -and $link.href -match $regex) {
+        Invoke-WebRequest -Uri "$($baseUri)$($link.href)" -OutFile $outFile
+        $ignore = $true
+      }
+    }
   }
 }
 
 
 Process {
+  
+  $firefoxUri = "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-GB"
+  directDownload -name "Firefox" -uri $firefoxUri -outFile "firefox.exe"
 
-  Write-Verbose "Downloading Firefox"
-  Invoke-WebRequest -Uri "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-GB" -OutFile "firefox.exe"
+  $chromeUri = "https://dl.google.com/tag/s/appguid%3D%7B8A69D345-D564-463C-AFF1-A69D9E530F96%7D%26iid%3D%7BC4348067-C07A-AB3A-24D4-49A0F069B2DC%7D%26lang%3Den%26browser%3D3%26usagestats%3D0%26appname%3DGoogle%2520Chrome%26needsadmin%3Dprefers%26ap%3Dx64-stable-statsdef_1%26installdataindex%3Dempty/chrome/install/ChromeStandaloneSetup64.exe"
+  directDownload -name "Chrome" -uri $chromeUri -outFile "chrome.exe"
 
-  Write-Verbose "Downloading Chrome"
-  Invoke-WebRequest -Uri "https://dl.google.com/tag/s/appguid%3D%7B8A69D345-D564-463C-AFF1-A69D9E530F96%7D%26iid%3D%7BC4348067-C07A-AB3A-24D4-49A0F069B2DC%7D%26lang%3Den%26browser%3D3%26usagestats%3D0%26appname%3DGoogle%2520Chrome%26needsadmin%3Dprefers%26ap%3Dx64-stable-statsdef_1%26installdataindex%3Dempty/chrome/install/ChromeStandaloneSetup64.exe" -OutFile "firefox.exe"
-
-  Write-Verbose "Downloading Video Lan"
   $vlcURI = "http://download.videolan.org/pub/videolan/vlc/last/win64/"
-  $vlcPage = Invoke-WebRequest -Uri $vlcURI
-  foreach ($link in $vlcPage.Links) {
-    if ($link.href -match "vlc-[0-9.]*-win64.exe$") {
-      Invoke-WebRequest -Uri "$($vlcURI)$($link.href)" -OutFile "vlc.exe"
-    }
-  }
+  regexLinkDownload -name "VLC Player" -baseUri $vlcURI -outFile "vlc.exe" -regex "vlc-[0-9.]*-win64.exe$"
 
-  Write-Verbose "Downloading 7-Zip"
   $7zipURI = "https://www.7-zip.org/"
-  $7ziPage = Invoke-WebRequest -Uri "$($7zipURI)download.html"
-  foreach ($link in $7ziPage.Links) {
-    if ($link.href -match "a/7z[0-9]*-x64.msi$") {
-      Invoke-WebRequest -Uri "$($7zipURI)$($link.href)" -OutFile "7zip.msi"
-      exit
-    }
-  }
+  regexLinkDownload -name "7-Zip" -baseUri $7zipURI -page "download.html" -outFile "7zip.msi" -regex "a/7z[0-9]*-x64.msi$"
+
 }
-# https://www.7-zip.org/a/7z1900-x64.msi
-# https://www.7-zip.org/a/7z920-x64.msi
+
 END {       
   # Finally, run one-time tear-down tasks here.
   Write-Verbose -Message "$($MyInvocation.MyCommand.Name): Complete."
