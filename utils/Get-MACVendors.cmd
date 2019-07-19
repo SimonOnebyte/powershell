@@ -4,4 +4,5 @@ IF NOT EXIST "C:\Program Files\PowerShell\6\pwsh.exe" (
     set /p Cont="Press enter to close window"
     exit 1
 )
-"C:\Program Files\PowerShell\6\pwsh.exe" -file .\Check-MACs.ps1
+
+"C:\Program Files\PowerShell\6\pwsh" -File .\Get-MACVendors.ps1 -InFile .\macs.txt
