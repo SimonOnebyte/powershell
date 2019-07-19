@@ -50,6 +50,7 @@ BEGIN {
 
     # Regex to match MAC addresses
     $MACreg = "([0-9A-F]{2}[:-]){5}([0-9A-F]{2})"
+    $IPreg = [regex] "\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
 
 }
 
@@ -62,12 +63,16 @@ Process {
     ForEach ($file In $InFile) {
         Write-Verbose "Processing -Param1:$file"
 
-        $matches = Select-String -Path $file -Pattern $MACreg
+        $macs = Select-String -Path $file -Pattern $MACreg
+        $ips =  Select-String -Path $file -Pattern $IPreg
 
-        foreach ($match in $matches) {
-            if ($match.Matches.Value -NotMatch "00:00:00:00:00:00") {
-                $mac = $match.Matches.Value
-                Write-Host "Checking  $mac  : " -NoNewline
+        for ($i=0; $i -lt $macs.Length; $i++) {
+
+            $mac = $macs[$i].Matches.Value
+            $ip = $ips[$i].Matches.Value
+
+            if ($mac -NotMatch "00:00:00:00:00:00") {
+                Write-Host "Checking  $mac  -  $ip `t: " -NoNewline
                 try {
                     $res = Invoke-RestMethod -Uri "$apiUrl/$mac)" -Authentication Bearer -Token $token -Headers @{"Accept"="text/plain"}
                     Write-Host $res
