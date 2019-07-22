@@ -1,4 +1,3 @@
-#requires -Version 6
 <#
 .SYNOPSIS
   Deploys a script local profile directory for dot sourcing into profile
@@ -103,7 +102,7 @@ Process {
 
     $script = Get-Content -Path $item
     if ($script[0] -notmatch "function") {
-      $name = Split-Path -Path $item -LeafBase
+      $name = Split-Path -Path $item -Leaf
       Write-Verbose "Wrapping $name in a function"
       $scriptOut = "function $name {`n"
       foreach ($l in $script) {
