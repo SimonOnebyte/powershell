@@ -102,7 +102,7 @@ Process {
     Write-Verbose "Deploying -Param1:$item"
 
     $script = Get-Content -Path $item
-    if ($script[0] -notmatch "^[fF]unction") {
+    if ($script[0] -notmatch "function") {
       $name = Split-Path -Path $item -LeafBase
       Write-Verbose "Wrapping $name in a function"
       $scriptOut = "function $name {`n"
