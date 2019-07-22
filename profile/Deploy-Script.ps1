@@ -65,7 +65,7 @@ BEGIN {
   if ($ForceProfile) {
     Write-Verbose "ForceProfile specified. Profile will be overwriten"
   }
-  
+
   $prof = @"
 function Global:prompt { "PS [`$Env:username]`$PWD`n>" } 
 
@@ -86,7 +86,7 @@ if (Test-Path -Path "`$path\myScripts") {
   }
 
   Write-Verbose "Checking to see if myScripts folder exists"
-  if ((Test-Path $myScripts) -eq $false -or $ForceProfile) {
+  if (-not (Test-Path $myScripts)) {
     Write-Verbose "Creating myScripts folder"
     New-Item -Path $myScripts -ItemType Directory | Out-Null
   }
