@@ -1,3 +1,4 @@
+#requires -Version 6
 <#
 .SYNOPSIS
   Deploys a script local profile directory for dot sourcing into profile
@@ -14,15 +15,25 @@
 .PARAMETER Path
   The script or scripts that you want dot sources by the local profile
 
+.PARAMETER ForceProfile
+  Setting this switch will force the existing profile to be replaced with
+  the Onebyte default profile.
+
 .EXAMPLE
   DeployScript -Path .\My-Script.ps1
  
   Will copy the script 'My-Script' into the profile so it is always available
 
+.EXAMPLE
+  DeployScript -Path .\My-Script.ps1 -ForceProfile
+ 
+  Will copy the script 'My-Script' into the profile so it is always available
+  Will also repalce the existing profile with the default one
+
 .NOTES
   Authored By: Simon Buckner
   Email: simon@onebyte.net
-  Date: 20th July 2019
+  Date: 22th July 2019
 
 #>
 
@@ -35,7 +46,13 @@ Param(
     ValueFromPipelineByPropertyName = $True
   )]
   [ValidateLength(1, 256)]
-  [String[]]$Path
+  [String[]]$Path,
+
+  [Parameter(
+    Mandatory= $false,
+    Position=2
+  )]
+  [switch]$ForceProfile
 )
 
 BEGIN {
@@ -45,6 +62,10 @@ BEGIN {
   Write-Verbose -Message "$($MyInvocation.MyCommand.Name): Started."
   $myScripts = "$(Split-Path -Path $profile -Parent)\myScripts"
 
+  if ($ForceProfile) {
+    Write-Verbose "ForceProfile specified. Profile will be overwriten"
+  }
+  
   $prof = @"
 function Global:prompt { "PS [`$Env:username]`$PWD`n>" } 
 
@@ -58,14 +79,14 @@ if (Test-Path -Path "`$path\myScripts") {
 "@
 
   Write-Verbose "Checking to see if a profile exists"
-  if (-not (Test-Path $profile)) {
+  if ((Test-Path $profile) -eq $false -or $ForceProfile) {
     Write-Verbose "Creating profile"
     New-Item -Path $profile -Force | Out-Null
     $prof | Out-File -FilePath $profile
   }
 
   Write-Verbose "Checking to see if myScripts folder exists"
-  if (-not (Test-Path $myScripts)) {
+  if ((Test-Path $myScripts) -eq $false -or $ForceProfile) {
     Write-Verbose "Creating myScripts folder"
     New-Item -Path $myScripts -ItemType Directory | Out-Null
   }
