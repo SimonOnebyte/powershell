@@ -1,14 +1,3 @@
-@@ECHO off
-@@setlocal EnableDelayedExpansion
-@@set LF=^
-
-
-@@SET command=#
-@@FOR /F "tokens=*" %%i in ('findstr -bv @@ "%~f0"') DO SET command=!command!!LF!%%i
-@@powershell -noprofile -noexit -command !command! &amp; goto:eof
-
-
-# *** POWERSHELL CODE STARTS HERE *** #
 Write-Host ""
 Write-Host ""
 Write-Host "This script will deploy the PowerShell scripts listed below."
@@ -18,7 +7,7 @@ Write-Host ""
 Write-Host ""
 
 $scripts = Get-ChildItem -Path "." -Filter "*.ps1" | ForEach-Object { 
-    if ($_.Name -ne """Microsoft.PowerShell_profile.ps1""" -and $_.Name -ne """Deploy-All.ps1""") {
+    if ($_.Name -ne "Microsoft.PowerShell_profile.ps1" -and $_.Name -ne "Deploy-All.ps1") {
         $_
     }
 } | Sort-Object -Property Name
@@ -33,15 +22,15 @@ $r = Read-Host "Type 'yes' and press enter to continue."
 
 if ($r -match 'yes') {
     $myScripts = (Split-Path -Path $profile -Parent)
-    Remove-Item -Path """$myScripts\myScripts\*.ps1"""
+    Remove-Item -Path "$myScripts\myScripts\*.ps1"
     $force = $true
     foreach ($script in $scripts) {
         Write-Host "- -->Deploying $($script.Name)"
         if (-not $force) {
-            .\Deploy-Script.ps1 -Path """.\$($script.File)"""
+            .\Deploy-Script.ps1 -Path ".\$($script.File)"
         }
         else {
-            .\Deploy-Script.ps1 -Path """.\$($script.Name)""" -ForceProfile
+            .\Deploy-Script.ps1 -Path ".\$($script.Name)" -ForceProfile
         }
     }
 }
@@ -49,4 +38,3 @@ if ($r -match 'yes') {
 Write-Host ""
 Write-Host ""
 Read-Host "Press enter to close this window"
-Exit
