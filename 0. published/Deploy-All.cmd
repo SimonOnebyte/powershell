@@ -18,7 +18,7 @@ Write-Host ""
 Write-Host ""
 
 $scripts = Get-ChildItem -Path "." -Filter "*.ps1" | ForEach-Object { 
-    if ($_.Name -ne """Microsoft.PowerShell_profile.ps1""" -and $_.Name -ne """Deploy-All.ps1""") {
+    if ($_.Name -ne """Microsoft.PowerShell_profile.ps1""" -and $_.Name -ne """Deploy-AllPowerShell6.ps1""") {
         $_
     }
 } | Sort-Object -Property Name
