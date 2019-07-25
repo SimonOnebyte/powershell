@@ -1,79 +1,106 @@
 <#
 .SYNOPSIS
-    Prevents 
-
-.DESCRIPTION
-    Gets a list of active accounts from the AD and deletes OST folders for that exists with no account
-
-.PARAMETER WhatIf
-    Don't delete anything, just report folders and size.
+    Adjusts permissions on a folder to prevent it from being deleted, renamed or moved.
 
 .EXAMPLE
-    Clean-RedirectFolders
+    Protect-Folders -Path C:\Shares\Accounts
 
-    Delete Redirect folders from default file share \\SERVER01\REDIRECTS
+    Prevent the folder C:\Shares\Accounts from being renamed, deleted or moved.
 
 .NOTES
   Authored By: Simon Buckner
   Email: simon@onebyte.net
-  Date: 2019/05/15
+  Date: 25th July 2019
 .LINK
   
 #>
 
-[CmdletBinding()]
-param (
-    # Parameter help description
-    [Parameter(
-        Mandatory=$false, 
-        Position=0, 
-        ValueFromPipeline=$false)]
-    [switch]$WhatIf
+[CmdletBinding(SupportsShouldProcess = $True)]
+Param(
+  [Parameter(
+    Mandatory = $True,
+    Position = 0,
+    ValueFromPipeline = $True,
+    ValueFromPipelineByPropertyName = $True
+  )]
+  [ValidateLength(1, 256)]
+  [String[]]$Path
 )
 
+BEGIN {
 
-Begin {
-    Write-Verbose "Remove-UserFolders - Started"
-    $stopWatch = [System.Diagnostics.StopWatch]::StartNew()
-    # $searchBase = "ou=Staff,ou=Company,dc=ad,dc=pedderproperty,dc=com"
-    $locations = @(".\")
+    # Run one-time set-up tasks here, like defining variables, etc.
+    Set-StrictMode -Version Latest
+    Write-Verbose -Message "$($MyInvocation.MyCommand.Name): Started."
+
+    function Remove-Permission($StartingDir, $UserOrGroup = "", $All = $false) {
+        $acl = get-acl -Path $StartingDir
+        if ($UserOrGroup -ne "") {
+          foreach ($access in $acl.Access) {
+            if ($access.IdentityReference.Value -eq $UserOrGroup) {
+              $acl.RemoveAccessRule($access) | Out-Null
+            }
+          }
+        } 
+        if ($All -eq $true) {
+          foreach ($access in $acl.Access) {
+            $acl.RemoveAccessRule($access) | Out-Null
+          }
+        }
+        Set-Acl -Path $folder.FullName -AclObject $acl
+      }
+    
+      function Set-Inheritance($StartingDir, $DisableInheritance = $false, $KeepInheritedAcl = $false) {
+        $acl = get-acl -Path $StartingDir
+        $acl.SetAccessRuleProtection($DisableInheritance, $KeepInheritedAcl)
+        $acl | Set-Acl -Path $StartingDir
+      }
+      function Set-Permission($StartingDir, $UserOrGroup = "", $InheritedFolderPermissions = "ContainerInherit, ObjectInherit", $AccessControlType = "Allow", $PropagationFlags = "None", $AclRightsToAssign) {
+        ### The possible values for Rights are:
+        # ListDirectory, ReadData, WriteData, CreateFiles, CreateDirectories, AppendData, Synchronize, FullControl
+        # ReadExtendedAttributes, WriteExtendedAttributes, Traverse, ExecuteFile, DeleteSubdirectoriesAndFiles, ReadAttributes 
+        # WriteAttributes, Write, Delete, ReadPermissions, Read, ReadAndExecute, Modify, ChangePermissions, TakeOwnership
+            
+        ### Principal expected
+        # domain\username 
+            
+        ### Inherited folder permissions:
+        # Object inherit    - This folder and files. (no inheritance to subfolders)
+        # Container inherit - This folder and subfolders.
+        # Inherit only      - The ACE does not apply to the current file/directory
+            
+        ### Propogation Flags
+        # 
+        #define a new access rule.
+        $acl = Get-Acl -Path $StartingDir
+        $perm = $UserOrGroup, $AclRightsToAssign, $InheritedFolderPermissions, $PropagationFlags, $AccessControlType
+        $rule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule -ArgumentList $perm
+        $acl.SetAccessRule($rule)
+        set-acl -Path $StartingDir $acl
+      }
+    
+      $PROTECTACL = @("Delete", "DeleteSubdirectoriesAndFiles")
+    #   $READWRITEACL = @("Write", "Read", "Delete", "Traverse", "AppendData", "DeleteSubdirectoriesAndFiles")
+    #   $READONLYACL = @("Read")
+    #   $ADMINACL = "FullControl"
+            
 }
 
 Process {
-
-    Write-Verbose "Retrieving list of users from the AD"
-    # $users = Get-ADUser -SearchBase $searchBase -Filter "Enabled -eq '$true'" | ForEach-Object { $_.sAMAccountName }
-    $users = @("Test2")
-    Write-Verbose "  ${$users.Lenght} accounts found in the AD"
-    
-    Write-Verbose "Retriveing list of Redirect Folders from "
-    $folders = Get-ChildItem -Path $ostPath -Directory
-
-    Write-Verbose "Comparing $($users.Length) users against $($folders.Length) folders"
-    $size = 0
-    $count = 0
-    $toDelete = @()
-    foreach ($folder in $folders) {
-        $f = $folder.Name
-        $fp = $($folder.FullName)
-        if ($users -notcontains $f) {
-            $count++
-            $size += (Get-ChildItem -Path $fp -Recurse | Measure-Object -Sum Length).Sum / 1GB
-            $toDelete += ,$fp
-        }
-    }
-
-    $toDelete
-    Write-Output "$count folders being deleted freeing $size GB"
-
-    foreach ($f in $toDelete) {
-        Write-Output "Deleting Redirect folder $f"
-        if (-not $WhatIf) {
-            Remove-Item -Path $f -Recurse -Force
+    # Place all script elements within the process block to allow processing of
+    # pipeline correctly.
+      
+    # The process block can be executed multiple times as objects are passed through the pipeline into it.
+    ForEach ($folder In $Path) {
+        Write-Verbose "-->Protecting folder: $folder"
+        Set-Permission $folder -UserOrGroup "Authenticated Users" -AclRightsToAssign $PROTECTACL -AccessControlType "Deny" -InheritedFolderPermissions "None"
+        if ($? -eq $false) {
+          continue
         }
     }
 }
 
-End {
-    Write-Verbose "Clean-RedirectFolders - Finished, elapsed time $($stopWatch.Elapsed.TotalSeconds) seconds"
+END {       
+  # Finally, run one-time tear-down tasks here.
+  Write-Verbose -Message "$($MyInvocation.MyCommand.Name): Complete."
 }
