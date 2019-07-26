@@ -44,8 +44,9 @@ BEGIN {
     Write-Verbose -Message "$($MyInvocation.MyCommand.Name): Started."
 
     # Details for Mac Vendors API
-    $apiKey = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJtYWN2ZW5kb3JzIiwiZXhwIjoxODM4MTAyMzgzLCJpYXQiOjE1MjM2MDYzODMsImlzcyI6Im1hY3ZlbmRvcnMiLCJqdGkiOiI3NDhmMWQxNi04NmQyLTRkNjctODFkMS1hMDdmOWFiZjdjMjgiLCJuYmYiOjE1MjM2MDYzODIsInN1YiI6IjIzMCIsInR5cCI6ImFjY2VzcyJ9.6NhgKTluSu8T2Hy-fsLofnG-O6XagGksBSg-fr-cTW9RYgQfQzWeqLqdsnssBSNUZJEJe-fPhzz3Kj57cEaDVQ"
-    $token = ConvertTo-SecureString -String $apiKey -AsPlainText -Force
+    # Authentication no longer required
+    # $apiKey = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJtYWN2ZW5kb3JzIiwiZXhwIjoxODM4MTAyMzgzLCJpYXQiOjE1MjM2MDYzODMsImlzcyI6Im1hY3ZlbmRvcnMiLCJqdGkiOiI3NDhmMWQxNi04NmQyLTRkNjctODFkMS1hMDdmOWFiZjdjMjgiLCJuYmYiOjE1MjM2MDYzODIsInN1YiI6IjIzMCIsInR5cCI6ImFjY2VzcyJ9.6NhgKTluSu8T2Hy-fsLofnG-O6XagGksBSg-fr-cTW9RYgQfQzWeqLqdsnssBSNUZJEJe-fPhzz3Kj57cEaDVQ"
+    # $token = ConvertTo-SecureString -String $apiKey -AsPlainText -Force
     # This URL seems to be depracated
     #$apiUrl = "https://api.macvendors.com/v1/lookup"
     $apiUrl = "https://api.macvendors.com/"
