@@ -46,7 +46,9 @@ BEGIN {
     # Details for Mac Vendors API
     $apiKey = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJtYWN2ZW5kb3JzIiwiZXhwIjoxODM4MTAyMzgzLCJpYXQiOjE1MjM2MDYzODMsImlzcyI6Im1hY3ZlbmRvcnMiLCJqdGkiOiI3NDhmMWQxNi04NmQyLTRkNjctODFkMS1hMDdmOWFiZjdjMjgiLCJuYmYiOjE1MjM2MDYzODIsInN1YiI6IjIzMCIsInR5cCI6ImFjY2VzcyJ9.6NhgKTluSu8T2Hy-fsLofnG-O6XagGksBSg-fr-cTW9RYgQfQzWeqLqdsnssBSNUZJEJe-fPhzz3Kj57cEaDVQ"
     $token = ConvertTo-SecureString -String $apiKey -AsPlainText -Force
-    $apiUrl = "https://api.macvendors.com/v1/lookup"
+    # This URL seems to be depracated
+    #$apiUrl = "https://api.macvendors.com/v1/lookup"
+    $apiUrl = "https://api.macvendors.com/"
 
     # Regex to match MAC addresses
     $MACreg = "([0-9A-F]{2}[:-]){5}([0-9A-F]{2})"
@@ -74,7 +76,10 @@ Process {
             if ($mac -NotMatch "00:00:00:00:00:00") {
                 Write-Host "Checking  $mac  -  $ip `t: " -NoNewline
                 try {
-                    $res = Invoke-RestMethod -Uri "$apiUrl/$mac)" -Authentication Bearer -Token $token -Headers @{"Accept"="text/plain"}
+                    # Looks like no API key is required any more either.
+                    # $res = Invoke-RestMethod -Uri "$apiUrl/$mac)" -Authentication Bearer -Token $token -Headers @{"Accept"="text/plain"}
+                    $urlMac = $mac.Replace(":", "%3A")
+                    $res = Invoke-RestMethod -Uri "$apiUrl/$urlMac)" -Headers @{"Accept"="text/plain"}
                     Write-Host $res
                 } catch {
                     Write-Host "Failed" -ForegroundColor Red
