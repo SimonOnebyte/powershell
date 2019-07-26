@@ -111,7 +111,7 @@ Process {
       $scriptOut += "`n}"
       $script = $scriptOut
     }
-    $script | Out-File -FilePath "$myScripts\$name.ps1" -Force
+    $script | Out-File -FilePath "$myScripts\$name" -Force
   }
 }
 
