@@ -98,13 +98,14 @@ Process {
     
   # The process block can be executed multiple times as objects are passed through the pipeline into it.
   ForEach ($item In $Path) {
-    Write-Verbose "Deploying -Param1:$item"
+    Write-Verbose "Deploying $item"
 
     $script = Get-Content -Path $item
     if ($script[0] -notmatch "function") {
       $name = Split-Path -Path $item -Leaf
-      Write-Verbose "Wrapping $name in a function"
-      $scriptOut = "function $name {`n"
+      $funcName = $name.Replace(".ps1","")
+      Write-Verbose "Wrapping $funcName in a function"
+      $scriptOut = "function $funcName {`n"
       foreach ($l in $script) {
         $scriptOut += "$l`n"
       }
