@@ -1,0 +1,20 @@
+{
+    "offices": [
+        {
+            "short_code": "o1",
+            "name": "Office 1",
+            "phone": "+44 (0) 123 456 7890",
+            "steet": "1 A street, area",
+            "city": "London",
+            "postcode": "EC1 9AV"
+        },
+                {
+            "short_code": "o2",
+            "name": "Office 2",
+            "phone": "+44 (0) 123 456 7890",
+            "steet": "2 A street, area",
+            "city": "London",
+            "postcode": "EC2 9AV"
+        }
+    ]
+}
